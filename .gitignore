@@ -1,0 +1,5 @@
+.vscode/
+objs/
+*.a
+*.o
+tis-interpretor
