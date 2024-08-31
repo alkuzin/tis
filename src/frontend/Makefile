@@ -3,7 +3,7 @@ include ../common.mk
 INCLUDE_DIR = ../../include
 NAME = frontend.o
 
-SRC  = token
+SRC  = token lexer
 SRCS = $(addsuffix .cpp, $(SRC))
 OBJS = $(addsuffix .o, $(SRC))
 

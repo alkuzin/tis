@@ -16,13 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <tis/token.hpp>
 #include <iostream>
+#include <string>
+
+#include <tis/token.hpp>
+#include <tis/lexer.hpp>
 
 int main(void)
 {
     // Example
-    tis::Token token(tis::TokenType::INTEGER, "123");
+    std::string text = "12 + 10 - 32 * 4;";
+    tis::Lexer lexer(text);
+    tis::Token token;
 
-    std::cout << token << std::endl;
+    do {
+        token = lexer.get_next_token();
+        std::cout << token << std::endl;
+    } while (token.get_type() != tis::TokenType::END);
+
+    return 0;
 }
