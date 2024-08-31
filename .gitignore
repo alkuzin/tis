@@ -2,4 +2,4 @@
 objs/
 *.a
 *.o
-tis-interpretor
+tis-translator
