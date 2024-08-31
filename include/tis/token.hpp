@@ -36,6 +36,7 @@ enum class TokenType : int32_t {
     INTEGER,
     OPERATOR,
     PUNCTUATION,
+    END,
     UNKNOWN = -1
 };
 
@@ -44,9 +45,10 @@ class Token
     TokenType   m_type;
     std::string m_value;
 
-    private:
-        
     public:
+        /** Token default constructor. */
+        Token(void);
+
         /**
          * @brief Construct a new Token object.
          * 

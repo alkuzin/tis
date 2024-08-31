@@ -23,6 +23,8 @@
 
 namespace tis {
 
+Token::Token(void) : m_type(TokenType::UNKNOWN), m_value("") {}
+
 Token::Token(TokenType type, const std::string& value) : m_type(type), m_value(value) {}
 
 TokenType Token::get_type(void) const
@@ -32,9 +34,6 @@ TokenType Token::get_type(void) const
 
 std::string Token::get_value(void) const
 {
-    if (m_value.empty())
-        throw std::runtime_error("Token value is empty");
-
     return m_value;
 }
 
@@ -59,6 +58,10 @@ std::ostream& operator<<(std::ostream& os, const TokenType type)
             os << "UNKNOWN";
             break;
         
+        case TokenType::END:
+            os << "END";
+            break;
+        
         default:
             os << "UNKNOWN";
             break;
@@ -68,7 +71,7 @@ std::ostream& operator<<(std::ostream& os, const TokenType type)
 
 std::ostream& operator<<(std::ostream& os, const Token& token)
 {
-    os << "Token(" << token.get_type() << ", " << token.get_value() << ")";
+    os << "Token(" << token.get_type() << ", \"" << token.get_value() << "\")";
     return os;
 }
 
