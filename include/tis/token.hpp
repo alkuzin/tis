@@ -37,6 +37,8 @@ enum class TokenType : int32_t {
     OPERATOR,
     PUNCTUATION,
     END,
+    PLUS,
+    MINUS,
     UNKNOWN = -1
 };
 

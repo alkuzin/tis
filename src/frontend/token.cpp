@@ -62,6 +62,8 @@ std::ostream& operator<<(std::ostream& os, const TokenType type)
             os << "END";
             break;
         
+        // TODO: handle all types of tokens
+
         default:
             os << "UNKNOWN";
             break;
