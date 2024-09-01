@@ -62,6 +62,9 @@ private:
     Token get_punctuation(void);
     
 public:
+    /** @brief Lexer default constructor.*/
+    Lexer(void) = default;
+
     /**
      * @brief Construct a new Lexer object.
      * 
