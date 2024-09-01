@@ -17,22 +17,31 @@
  */
 
 #include <iostream>
-#include <string>
+#include <tis/interpreter.hpp>
 
-#include <tis/token.hpp>
-#include <tis/lexer.hpp>
 
 int main(void)
 {
-    // Example
-    std::string text = "12 + 10 - 32 * 4;";
-    tis::Lexer lexer(text);
-    tis::Token token;
+    tis::Interpreter interpreter;
+    tis::Parser      parser;
+    tis::Lexer       lexer;
 
-    do {
-        token = lexer.get_next_token();
-        std::cout << token << std::endl;
-    } while (token.get_type() != tis::TokenType::END);
+    std::string line;
+
+    // TODO: fork this process like in shell
+    while (true) {
+        std::cout << ">>> ";
+        std::getline(std::cin, line);
+        
+        if (line.empty())
+            continue;
+        
+        lexer.set(line);
+        parser.set(lexer);
+        interpreter.set(parser);
+
+        interpreter.interpret();    
+    }
 
     return 0;
 }
