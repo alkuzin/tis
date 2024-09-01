@@ -71,6 +71,13 @@ public:
      * @param [in] text - given source code.
      */
     Lexer(const std::string& text);
+    
+    /**
+     * @brief Set lexer.
+     * 
+     * @param [in] text - given source code.
+     */
+    void set(const std::string& text);
 
     /**
      * @brief Get the next Token.

@@ -54,6 +54,13 @@ static inline bool is_punctuation(const char ch)
 namespace tis {
 
 Lexer::Lexer(const std::string& text) : m_text(text), m_size(text.size()), m_pos(0) {} 
+    
+void Lexer::set(const std::string& text)
+{
+    m_size = text.size();
+    m_text = text;
+    m_pos  = 0;
+}
 
 Token Lexer::get_integer(void)
 {
@@ -77,11 +84,11 @@ Token Lexer::get_operator(void)
         switch (symbol) {
             case '+':
                 m_pos++;
-                return Token{TokenType::OPERATOR, "+"};
+                return Token{TokenType::PLUS, "+"};
 
             case '-':
                 m_pos++;
-                return Token{TokenType::OPERATOR, "-"};
+                return Token{TokenType::MINUS, "-"};
         }
     }
     
@@ -111,7 +118,7 @@ Token Lexer::get_punctuation(void)
 
 Token Lexer::get_next_token(void)
 {
-    char symbol;
+    char symbol = ' ';
 
     while (m_pos < m_size) {
         symbol = m_text[m_pos];
@@ -137,7 +144,10 @@ Token Lexer::get_next_token(void)
         m_pos++;
     }
 
-    return Token(TokenType::END, "[end]");
+    // TODO: make static
+    std::string ch(1, symbol);
+
+    return Token(TokenType::END, ch);
 }
 
 } // namespace tis
