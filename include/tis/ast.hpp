@@ -89,6 +89,8 @@ class ASTOperator : public ASTNode
         std::string get_value(void) const;
 };
 
+using ASTOperatorPtr = std::shared_ptr<ASTOperator>;
+
 class ASTOperand : public ASTNode
 {
     Token m_token;
@@ -118,6 +120,8 @@ class ASTOperand : public ASTNode
          */
         std::string get_value(void) const;
 };
+
+using ASTOperandPtr = std::shared_ptr<ASTOperand>;
 
 } // namespace tis
 

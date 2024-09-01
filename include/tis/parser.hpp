@@ -27,6 +27,8 @@
 #ifndef _TIS_PARSER_HPP_
 #define _TIS_PARSER_HPP_
 
+#include <stack>
+
 #include <tis/lexer.hpp>
 #include <tis/ast.hpp>
 
@@ -34,8 +36,9 @@ namespace tis {
 
 class Parser
 {
-    Lexer      m_lexer;
-    ASTNodePtr m_root;  ///< AST root node.
+    std::stack<Token> m_stack;
+    ASTNodePtr        m_root;  ///< AST root node.
+    Lexer             m_lexer;
 
     private:
         /**
@@ -46,15 +49,36 @@ class Parser
         ASTNodePtr get_next_node(void);
 
     public:
+        /** @brief Parser default constructor.*/
+        Parser(void) = default;
+        
         /**
          * @brief Construct a new Parser object.
          * 
          * @param [in] lexer - given lexer object.
          */
         Parser(const Lexer& lexer);
+        
+        /**
+         * @brief Set parser.
+         * 
+         * @param [in] lexer - given lexer object.
+         */
+        void set(const Lexer& lexer);
 
-        /** @brief Parse tokens into AST. */
-        void parse(void);
+        /**
+         * @brief Get AST root node.
+         * 
+         * @return root node. 
+         */
+        ASTNodePtr get_ast(void) const;
+
+        /**
+         * @brief Parse tokens into AST.
+         * 
+         * @return root node.
+         */
+        ASTNodePtr parse(void);
 };
 
 } // namespace tis
