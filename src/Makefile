@@ -12,7 +12,7 @@ $(OBJS_PREFIXED):
 	$(MAKE) -C $(FRONTEND_DIR) all
 
 $(NAME): $(OBJS_PREFIXED)
-	$(CXX) $(CXXFLAGS) $(OBJS_PREFIXED) main.cpp -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS_PREFIXED) main.cpp debug.cpp -o $(NAME)
 
 all: $(NAME)
 	mv $(NAME) ../
