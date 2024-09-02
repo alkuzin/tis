@@ -38,8 +38,15 @@ class Lexer
     std::string m_text; ///< Source code.
     std::size_t m_size; ///< Length of source code.
     std::size_t m_pos;  ///< Current position.
+    char m_current_char;
 
 private:
+    /** @brief Move to the next character.*/
+    void advance(void);
+
+    /** @brief Skip spaces characters.*/
+    void skip_whitespace(void);
+
     /**
      * @brief Get integer from current position.
      * 
@@ -60,6 +67,13 @@ private:
      * @return punctuation token.
      */
     Token get_punctuation(void);
+    
+    /**
+     * @brief Get paren from current position.
+     * 
+     * @return paren token.
+     */
+    Token get_paren(void);
     
 public:
     /** @brief Lexer default constructor.*/

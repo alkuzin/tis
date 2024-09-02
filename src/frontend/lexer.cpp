@@ -23,131 +23,149 @@
 #include <tis/token.hpp>
 
 
-static const std::string operators   = "+-"; ///< List of available operators.
-static const std::string punctuation = ";";  ///< List of available punctuation symbols.
+static const std::string operators   = "+-*/"; ///< List of available operators.
+static const std::string punctuation = ";";    ///< List of available punctuation symbols.
+static const std::string parens      = "()";   ///< List of available parens symbols.
 
 /**
- * @brief Checks if given character is operator.
+ * @brief Checks if given character is in symbols list.
  * 
  * @param [in] ch - given character to check.
- * @return true - if given character is operator.
+ * @return true - if given character is in list.
  * @return false - otherwise.
  */
-static inline bool is_operator(const char ch)
+static inline bool in_list(const std::string& src, const char ch)
 {
-    return (operators.find(ch) != std::string::npos);
-}
-
-/**
- * @brief Checks if given character is punctuation symbol.
- * 
- * @param [in] ch - given character to check.
- * @return true - if given character is punctuation symbol.
- * @return false - otherwise.
- */
-static inline bool is_punctuation(const char ch)
-{
-    return (punctuation.find(ch) != std::string::npos);
+    return (src.find(ch) != std::string::npos);
 }
 
 
 namespace tis {
 
-Lexer::Lexer(const std::string& text) : m_text(text), m_size(text.size()), m_pos(0) {} 
-    
+Lexer::Lexer(const std::string& text) : m_text(text), m_size(text.size()), m_pos(0)
+{
+    m_current_char = m_text[m_pos];
+}
+
 void Lexer::set(const std::string& text)
 {
     m_size = text.size();
     m_text = text;
     m_pos  = 0;
+    m_current_char = m_text[m_pos];
+}
+
+void Lexer::advance(void)
+{
+    m_pos++;
+
+    if (m_pos > (m_size - 1))
+        m_current_char = '\0';
+    else
+        m_current_char = m_text[m_pos];
+}
+
+void Lexer::skip_whitespace(void)
+{
+    while ((m_current_char != '\0') && std::isspace(m_current_char))
+        advance();
 }
 
 Token Lexer::get_integer(void)
 {
     std::string result;
     
-    while ((m_pos < m_size) && std::isdigit(m_text[m_pos]))
-        result += m_text[m_pos++];
+    while ((m_current_char != '\0') && std::isdigit(m_current_char)) {
+        result += m_current_char;
+        advance();
+    }
 
     return Token{TokenType::INTEGER, result};
 }
 
 Token Lexer::get_operator(void)
 {
-    char symbol;
+    // TODO: use unordered_map for containing operators tokens:
+    // [key: "+", Value: TokenType::OPERATOR::PLUS]
+    switch (m_current_char) {
+        case '+':
+            advance();
+            return Token{TokenType::PLUS, "+"};
 
-    if (m_pos < m_size) {
-        symbol = m_text[m_pos];
-
-        // TODO: use unordered_map for containing operators tokens:
-        // [key: "+", Value: TokenType::OPERATOR::PLUS]
-        switch (symbol) {
-            case '+':
-                m_pos++;
-                return Token{TokenType::PLUS, "+"};
-
-            case '-':
-                m_pos++;
-                return Token{TokenType::MINUS, "-"};
-        }
+        case '-':
+            advance();
+            return Token{TokenType::MINUS, "-"};
+        
+        case '*':
+            advance();
+            return Token{TokenType::MUL, "*"};
+        
+        case '/':
+            advance();
+            return Token{TokenType::DIV, "/"};
     }
     
-    m_pos++;
-    return Token{TokenType::UNKNOWN, "[???]"};
+    advance();
+    return Token{TokenType::UNKNOWN, "[?]"};
 }
 
 Token Lexer::get_punctuation(void)
 {
-    char symbol;
-
-    if (m_pos < m_size) {
-        symbol = m_text[m_pos];
-
-        // TODO: use unordered_map for containing operators tokens:
-        // [key: "+", Value: TokenType::PUNCTUATION::SEMICOLON]
-        switch (symbol) {
-            case ';':
-                m_pos++;
-                return Token{TokenType::PUNCTUATION, ";"};
-        }
+    switch (m_current_char) {
+        case ';':
+            advance();
+            return Token{TokenType::PUNCTUATION, ";"};
     }
     
-    m_pos++;
-    return Token{TokenType::UNKNOWN, "[???]"};
+    advance();
+    return Token{TokenType::UNKNOWN, "[?]"};
+}
+
+Token Lexer::get_paren(void)
+{
+    // TODO: use unordered_map for containing operators tokens:
+    // [key: "(", Value: TokenType::LPAREN]
+    switch (m_current_char) {
+        case '(':
+            advance();
+            return Token{TokenType::LPAREN, "("};
+        
+        case ')':
+            advance();
+            return Token{TokenType::RPAREN, ")"};
+    }
+    
+    advance();
+    return Token{TokenType::UNKNOWN, "[?]"};
 }
 
 Token Lexer::get_next_token(void)
 {
-    char symbol = ' ';
-
-    while (m_pos < m_size) {
-        symbol = m_text[m_pos];
-
+    while (m_current_char != '\0') {
         // skip space characters
-        if (std::isspace(symbol)) {
-            m_pos++;
+        if (std::isspace(m_current_char)) {
+            skip_whitespace();
             continue;
         }
         
         // handle integers
-        if (std::isdigit(symbol))
+        if (std::isdigit(m_current_char))
             return get_integer();
 
         // handle operators
-        if (is_operator(symbol))
+        if (in_list(operators, m_current_char))
             return get_operator();
+        
+        // handle parens
+        if (in_list(parens, m_current_char))
+            return get_paren();
 
         // handle punctuation
-        if (is_punctuation(symbol))
+        if (in_list(punctuation, m_current_char))
             return get_punctuation();
-        
-        m_pos++;
     }
 
-    // TODO: make static
-    std::string ch(1, symbol);
-
-    return Token(TokenType::END, ch);
+    return Token(TokenType::END, "\0");
 }
 
 } // namespace tis
