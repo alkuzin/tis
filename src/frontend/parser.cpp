@@ -24,72 +24,92 @@
 
 namespace tis {
 
-Parser::Parser(const Lexer& lexer) : m_lexer(lexer) {}
+Parser::Parser(const Lexer& lexer) : m_lexer(lexer)
+{
+    m_current_token = m_lexer.get_next_token();
+}
 
 void Parser::set(const Lexer& lexer)
 {
-    m_lexer = lexer;
+    m_lexer         = lexer;
+    m_current_token = m_lexer.get_next_token();
 }
 
-ASTNodePtr Parser::get_next_node(void)
+void Parser::eat(TokenType type)
 {
-    auto right = m_stack.top();
-    m_stack.pop();
+    if (m_current_token.get_type() == type)
+        m_current_token = m_lexer.get_next_token();
+    else
+        // TODO: implement custom exceptions
+        throw std::runtime_error("Invalid syntax");
+}
 
-    auto op = m_stack.top();
-    m_stack.pop();
+ASTNodePtr Parser::factor(void)
+{
+    auto token      = m_current_token;
+    auto token_type = token.get_type();
 
-    ASTNodePtr right_node = std::make_shared<ASTOperand>(right);
-
-    if (m_stack.empty())
-        return right_node;
-    
-    if (m_stack.size() == 1) {
-        auto left = m_stack.top();
-        m_stack.pop();
-
-        ASTNodePtr left_node = std::make_shared<ASTOperand>(left);
-        
-        return std::make_shared<ASTOperator>(left_node, op, right_node);
+    if (token_type == TokenType::INTEGER) {
+        eat(TokenType::INTEGER);
+        return std::make_shared<ASTOperand>(token);
+    }
+    else if (token_type == TokenType::LPAREN) {
+        eat(TokenType::LPAREN);
+        auto node = expression();
+        eat(TokenType::RPAREN);
+        return node;
     }
     
-    ASTNodePtr left_node = get_next_node();
+    return nullptr;
+}
 
-    return std::make_shared<ASTOperator>(left_node, op, right_node);
+ASTNodePtr Parser::term(void)
+{
+    TokenType   type;
+    Token       token;
+
+    auto node = factor();
+
+    while ((m_current_token.get_type() == TokenType::MUL) || (m_current_token.get_type() == TokenType::DIV)) {
+        token = m_current_token;
+        type  = token.get_type();
+
+        if (type == TokenType::MUL)
+            eat(TokenType::MUL);
+        else if (type == TokenType::DIV)
+            eat(TokenType::DIV);
+        
+        node = std::make_shared<ASTOperator>(ASTOperator(node, token, factor()));
+    }
+    
+    return node;
+}
+
+ASTNodePtr Parser::expression(void)
+{
+    TokenType   type;
+    Token       token;
+
+    auto node = term();
+
+    while ((m_current_token.get_type() == TokenType::PLUS) || (m_current_token.get_type() == TokenType::MINUS)) {
+        token = m_current_token;
+        type  = token.get_type();
+
+        if (type == TokenType::PLUS)
+            eat(TokenType::PLUS);
+        else if (type == TokenType::MINUS)
+            eat(TokenType::MINUS);
+        
+        node = std::make_shared<ASTOperator>(ASTOperator(node, token, term()));
+    }
+    
+    return node;
 }
 
 ASTNodePtr Parser::parse(void)
 {
-    Token token;
-    
-    // fill stack with tokens
-    while (token.get_type() != TokenType::END) {
-        token = m_lexer.get_next_token();
-        m_stack.push(token);
-    } 
-    
-    // pop END token
-    token = m_stack.top();
-    m_stack.pop(); 
-
-    // handle single correct token
-    if (m_stack.size() == 1) {
-        // get last token
-        token = m_stack.top();
-        m_stack.pop();
-
-        m_root = std::make_shared<ASTOperand>(token);
-        return m_root;
-    }
-
-    // handle incorrect token
-    else if (m_stack.empty() && (token.get_type() != TokenType::INTEGER)) {
-        std::cerr << "\nInvalid syntax: \"" << token.get_value() << "\"\n";
-        std::exit(EXIT_FAILURE);
-    }
-    
-    m_root = get_next_node();
-    return m_root;
+    return expression();
 }
 
 ASTNodePtr Parser::get_ast(void) const
