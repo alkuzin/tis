@@ -43,6 +43,14 @@ class Interpreter
          * @return eveluation result.
          */
         int32_t visit(const ASTNodePtr& node);
+        
+        /**
+         * @brief Traverse AST terms.
+         * 
+         * @param [in] node - given term.
+         * @return expression result.
+         */
+        int32_t visit_operator(const ASTOperatorPtr& node);
 
     public:
         /** @brief Interpreter default constructor.*/

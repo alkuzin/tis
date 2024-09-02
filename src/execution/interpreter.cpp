@@ -31,64 +31,29 @@ static inline int32_t visit_operand(const ASTOperandPtr& node)
     return std::stoi(node->get_value());
 }
 
-/**
- * @brief Use operator for operands.
- * 
- * @param [in] left - given left operand value.
- * @param [in] right - given right operand value.
- * @param [in] op - given operator type.
- * @return result of using operator for operands.
- */
-static inline int32_t evaluate(int32_t left, int32_t right, TokenType op)
+int32_t Interpreter::visit_operator(const ASTOperatorPtr& node)
 {
-    int32_t result = 0;
+    auto left  = visit(node->get_left());
+    auto right = visit(node->get_right());
 
-    switch (op) {
+    switch (node->get_type()) {
         case TokenType::PLUS:
-            result = left + right;
-            break;
+            return left + right;
         
         case TokenType::MINUS:
-            result = left - right;
-            break;
+            return left - right;
+        
+        case TokenType::MUL:
+            return left * right;
+
+        case TokenType::DIV:
+            return left / right;
         
         default:
-            // TODO
             break;
     }
 
-    return result;
-}
-
-// TODO: rename ASTOperator to ASTTerm
-// TODO: rename ASTOperatorPtr to ASTTermPtr
-
-/**
- * @brief Traverse AST terms.
- * 
- * @param [in] node - given term.
- * @return expression result.
- */
-static int32_t visit_operator(const ASTOperatorPtr& node)
-{
-    // TODO: create inline function to_operand instead of using std::dynamic_pointer_cast<ASTOperand>(...)
-    // TODO: create inline function to_term instead of using std::dynamic_pointer_cast<ASTTerm>(...)
-    auto right_operand = std::dynamic_pointer_cast<ASTOperand>(node->get_right());
-    auto right_value   = visit_operand(right_operand);
-    auto type          = node->get_type();
-
-    int32_t result = 0;
-    
-    if (auto left_operand = std::dynamic_pointer_cast<ASTOperand>(node->get_left())) {
-        // std::cout << "\n(" << visit_operand(left_operand); // for debug
-        result = evaluate(visit_operand(left_operand), right_value, type);
-    }
-    else if(auto left_operator = std::dynamic_pointer_cast<ASTOperator>(node->get_left())) {
-        result = evaluate(visit_operator(left_operator), right_value, type);
-    }
-    // std::cout << " " << node->get_value() << " " << right_value << ")"; // for debug
-    
-    return result;
+    return 0;
 }
 
 Interpreter::Interpreter(const Parser& parser) : m_parser(parser) {}
@@ -100,17 +65,12 @@ void Interpreter::set(const Parser& parser)
 
 int32_t Interpreter::visit(const ASTNodePtr& node)
 {
-    int32_t result = 0;
+    if (auto operand = std::dynamic_pointer_cast<ASTOperand>(node))
+        return visit_operand(operand);
+    else if(auto op = std::dynamic_pointer_cast<ASTOperator>(node))
+        return visit_operator(op);
 
-    if (auto op = std::dynamic_pointer_cast<ASTOperator>(node)) {
-        result = visit_operator(op);
-        visit(op->get_left());
-        visit(op->get_right());
-    }
-    else if (auto operand = std::dynamic_pointer_cast<ASTOperand>(node))
-        result = visit_operand(operand);
-
-    return result;
+    return 0;
 }
 
 void Interpreter::interpret(void)
